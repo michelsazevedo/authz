@@ -1,0 +1,41 @@
+services:
+  test: &base
+    build:
+      context: ./
+      target: dev
+    image: authz-test
+    command: go test -v ./...
+    volumes:
+      - .:/go/src/github.com/michelsazevedo/authz/
+    depends_on:
+      - db
+    stdin_open: true
+    tty: true
+    environment:
+      - POSTGRES_USER=authz
+      - POSTGRES_PASSWORD=authzpwd
+      - POSTGRES_DB=authz
+      - POSTGRES_HOST=db:5432
+
+  web:
+    <<: *base
+    image: authz_web
+    command: go run .
+    ports:
+      - "8080:8080"
+
+  db:
+    image: postgres
+    restart: always
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=authz
+      - POSTGRES_PASSWORD=authzpwd
+      - POSTGRES_DB=authz
+
+
+volumes:
+  db_data:

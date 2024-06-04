@@ -1,3 +1,10 @@
+database:
+  host: "${POSTGRES_HOST}"
+  username: "${POSTGRES_USER}"
+  password: "${POSTGRES_PASSWORD}"
+  database: "${POSTGRES_DB}"
+  timeout: 5
+
 settings:
   secret: uY7abg321tyw097
   server:

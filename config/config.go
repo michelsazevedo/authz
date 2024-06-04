@@ -2,12 +2,12 @@ package config
 
 import (
 	"bytes"
+	"gopkg.in/yaml.v3"
 	"io"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
-
-	"gopkg.in/yaml.v3"
 )
 
 type Settings struct {
@@ -20,6 +20,14 @@ type Settings struct {
 
 // Config ...
 type Config struct {
+	Database struct {
+		Host     string `yaml:"host"`
+		Database string `yaml:"database"`
+		Username string `yaml:"username"`
+		Password string `yaml:"password"`
+		Timeout  string `yaml:"timeout"`
+	} `yaml:"database"`
+
 	Settings Settings `yaml:"settings"`
 }
 
@@ -39,6 +47,18 @@ func NewConfig() (*Config, error) {
 		return nil, err
 	}
 	return cfg, nil
+}
+
+func (c *Config) GetDatabaseURL() string {
+	databaseURL := url.URL{
+		Scheme:   "postgres",
+		User:     url.UserPassword(c.Database.Username, c.Database.Password),
+		Host:     c.Database.Host,
+		Path:     c.Database.Database,
+		RawQuery: "sslmode=disable",
+	}
+
+	return databaseURL.String()
 }
 
 func ExpandEnv(configs string) (io.Reader, error) {
