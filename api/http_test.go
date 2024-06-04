@@ -21,7 +21,6 @@ func TestSignInHandler(t *testing.T) {
 
 	t.Run("Returns Status Code 200", func(t *testing.T) {
 		if assert.NoError(t, authzHandler.SignIn(c)) {
-
 			if status := rec.Code; status != http.StatusOK {
 				t.Errorf("Handler returned wrong status code. Expected: %d. Got: %d.",
 					http.StatusOK, status)
