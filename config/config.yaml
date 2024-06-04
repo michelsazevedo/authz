@@ -1,0 +1,4 @@
+settings:
+  secret: uY7abg321tyw097
+  server:
+    port: ":8080"
