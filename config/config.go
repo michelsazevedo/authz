@@ -2,12 +2,13 @@ package config
 
 import (
 	"bytes"
-	"gopkg.in/yaml.v3"
 	"io"
 	"net/url"
 	"os"
 	"path"
 	"path/filepath"
+
+	"gopkg.in/yaml.v3"
 )
 
 type Settings struct {
