@@ -3,13 +3,16 @@ package main
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/michelsazevedo/authz/api"
 	"github.com/michelsazevedo/authz/config"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"net/http"
 )
 
 func main() {
 	conf, _ := config.NewConfig()
+	handler := api.NewHandler()
 
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
@@ -29,9 +32,17 @@ func main() {
 		},
 	}))
 
+	users := e.Group("/users")
+	users.POST("/signup", handler.SignUp)
+	users.POST("/signin", handler.SignIn)
+
+	auth := e.Group("/auth")
+	auth.GET("/", handler.Auth)
+	auth.POST("/refresh", handler.Refresh)
+
 	e.GET("/healthz", func(c echo.Context) error {
 		healthz := map[string]int{"status": 200}
-		return c.JSON(200, healthz)
+		return c.JSON(http.StatusOK, healthz)
 	})
 
 	e.Logger.Fatal(e.Start(conf.Settings.Server.Port))
