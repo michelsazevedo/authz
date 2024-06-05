@@ -5,6 +5,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/michelsazevedo/authz/api"
 	"github.com/michelsazevedo/authz/config"
+	"github.com/michelsazevedo/authz/domain"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"net/http"
@@ -12,7 +13,8 @@ import (
 
 func main() {
 	conf, _ := config.NewConfig()
-	handler := api.NewHandler()
+	service := domain.NewUserService()
+	handler := api.NewHandler(service)
 
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)

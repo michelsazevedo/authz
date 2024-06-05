@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/labstack/echo/v4"
+	"github.com/michelsazevedo/authz/domain"
 	"net/http"
 )
 
@@ -13,24 +14,51 @@ type AuthzHandler interface {
 }
 
 type handler struct {
+	userService domain.UserService
 }
 
-func NewHandler() AuthzHandler {
-	return &handler{}
+func NewHandler(userService domain.UserService) AuthzHandler {
+	return &handler{userService: userService}
 }
 
 func (h *handler) SignUp(c echo.Context) error {
-	return c.JSON(http.StatusCreated, map[string]bool{"success": true})
+	user := &domain.User{}
+
+	if err := c.Bind(user); err != nil {
+		return c.JSON(http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
+	}
+
+	if err := h.userService.SignUp(c.Request().Context(), user); err != nil {
+		return c.JSON(http.StatusUnprocessableEntity, err.Error())
+	}
+
+	return c.JSON(http.StatusCreated, user)
 }
 
 func (h *handler) SignIn(c echo.Context) error {
-	return c.JSON(http.StatusOK, map[string]bool{"success": true})
+	signInParams := &domain.SignInParams{}
+
+	if err := c.Bind(signInParams); err != nil {
+		return c.JSON(http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
+	}
+
+	user, err := h.userService.SignIn(c.Request().Context(), signInParams)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
+	}
+
+	return c.JSON(http.StatusCreated, user)
 }
 
 func (h *handler) Auth(c echo.Context) error {
-	return c.JSON(http.StatusOK, map[string]bool{"success": true})
+	return c.JSON(http.StatusCreated, &domain.JwtToken{})
 }
 
 func (h *handler) Refresh(c echo.Context) error {
-	return c.JSON(http.StatusCreated, map[string]bool{"success": true})
+	user, err := h.userService.Refresh(c.Request().Context(), domain.JwtToken{})
+	if err != nil {
+		return c.JSON(http.StatusUnprocessableEntity, http.StatusText(http.StatusUnprocessableEntity))
+	}
+
+	return c.JSON(http.StatusCreated, user)
 }
