@@ -7,11 +7,17 @@ type UserService interface {
 	SignUp(ctx context.Context, user *User) error
 	Refresh(ctx context.Context, token JwtToken) (*SignInResponse, error)
 }
+type UserRepository interface {
+	Create(ctx context.Context, user *User) error
+	FindOne(ctx context.Context, value string) (*User, error)
+}
 
-type userService struct{}
+type userService struct {
+	userRepository UserRepository
+}
 
-func NewUserService() UserService {
-	return &userService{}
+func NewUserService(userRepository UserRepository) UserService {
+	return &userService{userRepository: userRepository}
 }
 
 func (s *userService) SignIn(ctx context.Context, signInParams *SignInParams) (*SignInResponse, error) {

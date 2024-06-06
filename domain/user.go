@@ -18,6 +18,22 @@ type User struct {
 	DeletedAt time.Time   `json:"-"`
 }
 
+func (u *User) GetAttributes() []interface{} {
+	return []interface{}{u.FirstName, u.LastName, u.Email, u.Password, u.Locale}
+}
+
+func (u *User) GetColumns() []interface{} {
+	return []interface{}{
+		&u.Id,
+		&u.FirstName,
+		&u.LastName,
+		&u.Email,
+		&u.Locale,
+		&u.CreatedAt,
+		&u.UpdatedAt,
+	}
+}
+
 // SignInParams ...
 type SignInParams struct {
 	Email    string `json:"email" validate:"required,email"`

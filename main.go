@@ -6,6 +6,7 @@ import (
 	"github.com/michelsazevedo/authz/api"
 	"github.com/michelsazevedo/authz/config"
 	"github.com/michelsazevedo/authz/domain"
+	"github.com/michelsazevedo/authz/repository"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"net/http"
@@ -13,7 +14,8 @@ import (
 
 func main() {
 	conf, _ := config.NewConfig()
-	service := domain.NewUserService()
+	userRepository := repository.NewUserRepository(conf)
+	service := domain.NewUserService(userRepository)
 	handler := api.NewHandler(service)
 
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
