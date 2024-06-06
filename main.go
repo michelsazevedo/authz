@@ -6,6 +6,7 @@ import (
 	"github.com/michelsazevedo/authz/api"
 	"github.com/michelsazevedo/authz/config"
 	"github.com/michelsazevedo/authz/domain"
+	m "github.com/michelsazevedo/authz/middleware"
 	"github.com/michelsazevedo/authz/repository"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -17,12 +18,14 @@ func main() {
 	userRepository := repository.NewUserRepository(conf)
 	service := domain.NewUserService(userRepository)
 	handler := api.NewHandler(service)
+	settings := m.NewSettings(conf.Settings)
 
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 
 	e := echo.New()
 	e.Use(middleware.Recover())
+	e.Use(settings.Settings)
 	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		LogURI:    true,
 		LogStatus: true,
