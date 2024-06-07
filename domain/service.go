@@ -3,10 +3,11 @@ package domain
 import (
 	"context"
 	"errors"
+	"time"
+
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/michelsazevedo/authz/config"
 	"golang.org/x/crypto/bcrypt"
-	"time"
 )
 
 type UserService interface {
@@ -52,8 +53,18 @@ func (s *userService) SignUp(ctx context.Context, user *User) error {
 	return s.userRepository.Create(ctx, user)
 }
 
-func (s *userService) Refresh(ctx context.Context, token JwtToken) (*SignInResponse, error) {
-	return &SignInResponse{}, nil
+func (s *userService) Refresh(ctx context.Context, jwtToken JwtToken) (*SignInResponse, error) {
+	user, err := s.userRepository.FindOne(ctx, jwtToken.Email)
+	if err != nil {
+		return nil, errors.New("user not found")
+	}
+
+	token, err := createJWTClaims(ctx, user)
+	if err != nil {
+		return nil, errors.New(err.Error())
+	}
+
+	return &SignInResponse{Token: token, User: *user}, err
 }
 
 func (s *userService) authenticate(ctx context.Context, signInParams *SignInParams) (*User, error) {

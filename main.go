@@ -1,6 +1,8 @@
 package main
 
 import (
+	"net/http"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/michelsazevedo/authz/api"
@@ -10,7 +12,6 @@ import (
 	"github.com/michelsazevedo/authz/repository"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"net/http"
 )
 
 func main() {
@@ -19,6 +20,7 @@ func main() {
 	service := domain.NewUserService(userRepository)
 	handler := api.NewHandler(service)
 	settings := m.NewSettings(conf.Settings)
+	jwt := m.NewJwtJwtAuth()
 
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
@@ -44,7 +46,8 @@ func main() {
 	users.POST("/signin", handler.SignIn)
 
 	auth := e.Group("/auth")
-	auth.GET("/", handler.Auth)
+	auth.Use(jwt.JwtAuthenticate)
+	auth.GET("", handler.Auth)
 	auth.POST("/refresh", handler.Refresh)
 
 	e.GET("/healthz", func(c echo.Context) error {
